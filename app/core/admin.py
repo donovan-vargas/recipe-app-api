@@ -26,3 +26,4 @@ class Useradmin(BaseUserAdmin):
 
 
 admin.site.register(models.User, Useradmin)
+admin.site.register(models.Tag)
