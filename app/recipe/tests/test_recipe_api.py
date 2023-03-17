@@ -240,3 +240,49 @@ class RecipeImageUploadTests(TestCase):
         res = self.client.post(url, {'image': 'notimage'}, format='multipart')
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_recipes_by_tags(self):
+        """Test returning recipes with specific tags"""
+        recipe1 = sample_recipe(user=self.user, title='Thai curry')
+        recipe2 = sample_recipe(user=self.user, title='Pizza')
+        tag1 = sample_tag(user=self.user, name='Vegan')
+        tag2 = sample_tag(user=self.user, name='Vegetarian')
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag2)
+        recipe3 = sample_recipe(user=self.user, title='Fish and chips')
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'tags': f'{tag1.id}, {tag2.id}'}
+        )
+
+        serialize1 = RecipeSerialize(recipe1)
+        serialize2 = RecipeSerialize(recipe2)
+        serialize3 = RecipeSerialize(recipe3)
+
+        self.assertIn(serialize1.data, res.data)
+        self.assertIn(serialize2.data, res.data)
+        self.assertNotIn(serialize3.data, res.data)
+
+    def test_filters_recipes_by_ingredients(self):
+        """test returning recipes with specific ingredient"""
+        recipe1 = sample_recipe(user=self.user, title='Posh and beans')
+        recipe2 = sample_recipe(user=self.user, title='Chicken cacciatore')
+        ingredient1 = sample_ingredients(user=self.user, name='Cheese')
+        ingredient2 = sample_ingredients(user=self.user, name='Chicken')
+        recipe1.ingredients.add(ingredient1)
+        recipe2.ingredients.add(ingredient2)
+        recipe3 = sample_recipe(user=self.user, title='Steak and potatoes')
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'ingredients': f'{ingredient1.id}, {ingredient2.id}'}
+        )
+
+        serialize1 = RecipeSerialize(recipe1)
+        serialize2 = RecipeSerialize(recipe2)
+        serialize3 = RecipeSerialize(recipe3)
+
+        self.assertIn(serialize1.data, res.data)
+        self.assertIn(serialize2.data, res.data)
+        self.assertNotIn(serialize3.data, res.data)
